@@ -275,18 +275,14 @@ class ColorPicker {
     }
 
     constructor(container, options) {
-        //controllo se siamo nel caso di options passato come primo parametro
         if (options) {
             container = parseElement(container);
             this.options = Object.assign({}, DEFAULT, options);
         } else if (container && isPlainObject(container)) {
-            // se non trovo options e container è un {} lo considero il vero options
             this.options = Object.assign({}, DEFAULT, container);
             container = parseElement(this.options.attachTo);
         } else {
-            // altrimenti uso le opzioni di default
             this.options = Object.assign({}, DEFAULT);
-            // nel caso non vengano proprio passati parametri, considero attachTo di default
             container = parseElement(nvl(container, this.options.attachTo));
         }
 
@@ -302,33 +298,16 @@ class ColorPicker {
             this.G = 0;
             this.B = 0;
             this.A = 1;
-            // andrà a contenere la palette di colori effettivamente usata
-            // compresi i colori aggiunti o rimossi dall'utente, non sarà modificabile dirretamente dall'utente
             this.palette = { /*<color>: boolean*/ };
-
-            // creo gli elementi HTML e li aggiungo al container
             this.element = document.createElement('div');
             if (this.options.id) {
                 this.element.id = this.options.id;
             }
             this.element.className = 'a-color-picker';
-            if (!this.options.show) this.element.classList.add('hidden');
-            // // se falsy viene nascosto .a-color-picker-rgb
-            // if (!this.options.showRGB) this.element.className += ' hide-rgb';
-            // // se falsy viene nascosto .a-color-picker-hsl
-            // if (!this.options.showHSL) this.element.className += ' hide-hsl';
-            // // se falsy viene nascosto .a-color-picker-single-input (css hex)
-            // if (!this.options.showHEX) this.element.className += ' hide-single-input';
-            // // se falsy viene nascosto .a-color-picker-a
-            // if (!this.options.showAlpha) this.element.className += ' hide-alpha';
             this.element.innerHTML = HTML_BOX;
             container.appendChild(this.element);
 
-            if(this.options.open) this.element.setAttribute('open');
-
             if ('EyeDropper' in window) {
-                // The API is available!
-
                 let ed = this.element.querySelector('.a-color-picker-eyedropper');
                 const eyeDropper = new EyeDropper();
                 ed.addEventListener('click', (e) => {
@@ -344,21 +323,16 @@ class ColorPicker {
             }else{
                 this.element.dataset.noEyeDropper;
             }
-            // preparo il canvas con tutto lo spettro del HUE (da 0 a 360)
-            // in base al valore selezionato su questo canvas verrà disegnato il canvas per SL
             const hueBar = this.element.querySelector('.a-color-picker-h');
             this.setupHueCanvas(hueBar);
             this.hueBarHelper = canvasHelper(hueBar);
             this.huePointer = this.element.querySelector('.a-color-picker-h+.a-color-picker-dot');
-            // preparo il canvas per SL (saturation e luminance)
             const slBar = this.element.querySelector('.a-color-picker-sl');
             this.setupSlCanvas(slBar);
             this.slBarHelper = canvasHelper(slBar);
             this.slPointer = this.element.querySelector('.a-color-picker-sl+.a-color-picker-dot');
-            // preparo il box della preview
             this.preview = this.element.querySelector('.a-color-picker-preview');
             this.setupClipboard(this.preview.querySelector('.a-color-picker-clipbaord'));
-            // prearo gli input box
             if (this.options.showHSL) {
                 this.setupInput(this.inputH = this.element.querySelector('.a-color-picker-hsl>input[nameref=H]'));
                 this.setupInput(this.inputS = this.element.querySelector('.a-color-picker-hsl>input[nameref=S]'));
@@ -384,7 +358,6 @@ class ColorPicker {
                 this.paletteRow = this.element.querySelector('.a-color-picker-palette');
                 this.paletteRow.remove();
             }
-            // preparo in canvas per l'opacità
             if (this.options.showAlpha) {
                 this.setupAlphaCanvas(this.element.querySelector('.a-color-picker-a'));
                 this.alphaPointer = this.element.querySelector('.a-color-picker-a+.a-color-picker-dot');
@@ -1099,22 +1072,6 @@ function createPicker(element, options) {
          */
         show() {
             picker.element.classList.remove('hidden');
-        },
-
-        openPicker({target, x,y, color}, cb){
-            console.warn(target);
-
-            if(target && (!x || !y)){
-                let bbox = target.getBoundingClientRect();
-                x = bbox.x;
-                y = bbox.y;
-            }
-            if(isNaN(x)) x = window.innerWidth*.5;
-            if(isNaN(y)) y = 0;
-            picker.element.style.transform = "translate(" + (x) + "px," + (y) + "px)";
-            picker.element.classList.remove('hidden');
-            console.warn('OPEN PICKER TO: %s, %s', x, y);
-            console.warn('SET COLOR %s', color);
         },
 
         /**

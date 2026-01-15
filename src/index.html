@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+    <link href="acolorpicker.css" rel="stylesheet">
+
+    <style>
+        :root{
+            --color-picker-border-radius: 8px;
+        }
+
+        .a-color-picker-eyedropper{
+            width: 16px;
+            height: 32px;
+            display: flex;
+            cursor: pointer;
+        }
+
+        .a-color-picker-eyedropper:hover{
+            transform: scale(1.05);
+        }
+        .a-color-picker-eyedropper:active{
+            transform: scale(0.95);
+        }
+        .a-color-picker-rgb,
+        .a-color-picker-rgbhex{
+            padding: 7px 15px;
+        }
+
+        .a-color-picker-rgbhex > label{
+            display: none;
+        }
+
+        .a-color-picker-eyedropper svg{
+            height: 26px;
+            max-width: unset;
+            width: 26px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .a-color-picker{
+            border-radius: var(--color-picker-border-radius);
+        }
+        .a-color-picker-sl{
+            border-radius: var(--color-picker-border-radius) var(--color-picker-border-radius) 0 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="picker"></div>
+<div class="container">
+    <button id="test" class="button">OPEN PICKER</button>
+</div>
+
+<script type="module">
+    import { default as AColorPicker} from "./acolorpicker.js";
+    const toggler = document.getElementById('test');
+    const pickerOptions = {
+        color: 'rgba(255,0,0,0.5)',
+        showAlpha: true,
+        showHSL: false,
+        showHEX: true,
+        useAlphaInPalette: true,
+        paletteEditable: true,
+        afterTemplateConfiguration: function(){
+            console.info('AFTER PICKER CONFIGURATION', this);
+        }
+    }
+
+    const myPicker = AColorPicker.createPicker(pickerOptions)
+    .on('change', (picker, color) => {
+        document.body.style.backgroundColor = color;
+    });
+
+    toggler.addEventListener('click', (e) => {
+        console.info(myPicker);
+        myPicker.openPicker({target: e.target, x1: e.clientX, y1: e.clientY, color: '#ccc'}, (color) => {
+            console.info('---->', color);
+        });
+    })
+
+</script>
+</body>
+</html>

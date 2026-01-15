@@ -3,12 +3,18 @@
  * https://github.com/narsenico/a-color-picker
  *
  * Copyright (c) 2017-2018, Gianfranco Caldi.
+ * Modificato da Alkadia
  * Released under the MIT License.
  */
 
+:root{
+    --color-picker-border-radius: 8px;
+}
+
 .a-color-picker {
+    position: fixed;
     background-color: #FFFFFF;
-    padding: 0px;
+    padding: 0;
     box-sizing: border-box;
     display: inline-flex;
     flex-direction: column;
@@ -16,7 +22,7 @@
     width: 232px;
     font: 400 10px Helvetica,Arial,sans-serif;
     border-radius: 3px;
-    box-shadow: 0px 0px 0px 1px rgba(0,0,0,0.05), 0px 2px 4px rgba(0,0,0,0.25);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.25);
 }
 
 .a-color-picker input {
@@ -63,13 +69,13 @@
     position: absolute;
     width: 14px;
     height: 14px;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
     background: #ffffff;
     pointer-events: none;
     border-radius: 50px;
     z-index: 1000;
-    box-shadow: 0px 1px 2px rgba(0,0,0,0.75);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.75);
 }
 
 .a-color-picker-a, .a-color-picker-h, .a-color-picker-sl {
@@ -117,7 +123,7 @@
 .a-color-picker-rgb>input,
 .a-color-picker-single-input>input {
     text-align: center;
-    padding: 2px 0px;
+    padding: 2px 0;
     width: 0;
     flex: 1 1 auto;
     border: 1px solid #e0e0e0;
@@ -149,7 +155,7 @@
 }
 
 .a-color-picker-sl {
-    border-radius: 3px 3px 0px 0px;
+    border-radius: 3px 3px 0 0;
 }
 
 .a-color-picker.hide-hsl [show-on-hsl],
@@ -181,7 +187,7 @@
     box-sizing: border-box;
     cursor: pointer;
     border-radius: 3px;
-    box-shadow: 0px 0px 0px 1px inset rgba(0,0,0,0.10);
+    box-shadow: 0 0 0 1px inset rgba(0,0,0,0.10);
 }
 
 .a-color-picker-palette-add {
@@ -192,4 +198,43 @@
 
 .a-color-picker.hidden {
     display: none;
+}
+
+
+.a-color-picker-eyedropper{
+    width: 16px;
+    height: 32px;
+    display: flex;
+    cursor: pointer;
+}
+
+.a-color-picker-eyedropper:hover{
+    transform: scale(1.05);
+}
+.a-color-picker-eyedropper:active{
+    transform: scale(0.95);
+}
+.a-color-picker-rgb,
+.a-color-picker-rgbhex{
+    padding: 7px 15px;
+}
+
+.a-color-picker-rgbhex > label{
+    display: none;
+}
+
+.a-color-picker-eyedropper svg{
+    height: 26px;
+    max-width: unset;
+    width: 26px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.a-color-picker{
+    border-radius: var(--color-picker-border-radius);
+}
+.a-color-picker-sl{
+    border-radius: var(--color-picker-border-radius) var(--color-picker-border-radius) 0 0;
 }
