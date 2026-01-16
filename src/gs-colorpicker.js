@@ -7,7 +7,6 @@
  * Released under the MIT License.
  */
 
-const isPlainObject = function t(t){if("object"!=typeof t||null===t)return!1;const e=Object.getPrototypeOf(t);return!(null!==e&&e!==Object.prototype&&null!==Object.getPrototypeOf(e)||Symbol.toStringTag in t||Symbol.iterator in t)};
 import {
     COLOR_NAMES,
     PALETTE_MATERIAL_500,
@@ -30,7 +29,7 @@ import {
     ensureArray,
     nvl
 } from './utils.js';
-
+const isPlainObject = value => value?.constructor === Object;
 
 
 
@@ -275,14 +274,18 @@ class ColorPicker {
     }
 
     constructor(container, options) {
+        //controllo se siamo nel caso di options passato come primo parametro
         if (options) {
             container = parseElement(container);
             this.options = Object.assign({}, DEFAULT, options);
         } else if (container && isPlainObject(container)) {
+            // se non trovo options e container è un {} lo considero il vero options
             this.options = Object.assign({}, DEFAULT, container);
             container = parseElement(this.options.attachTo);
         } else {
+            // altrimenti uso le opzioni di default
             this.options = Object.assign({}, DEFAULT);
+            // nel caso non vengano proprio passati parametri, considero attachTo di default
             container = parseElement(nvl(container, this.options.attachTo));
         }
 
@@ -298,16 +301,33 @@ class ColorPicker {
             this.G = 0;
             this.B = 0;
             this.A = 1;
+            // andrà a contenere la palette di colori effettivamente usata
+            // compresi i colori aggiunti o rimossi dall'utente, non sarà modificabile dirretamente dall'utente
             this.palette = { /*<color>: boolean*/ };
+
+            // creo gli elementi HTML e li aggiungo al container
             this.element = document.createElement('div');
             if (this.options.id) {
                 this.element.id = this.options.id;
             }
             this.element.className = 'a-color-picker';
+            if (!this.options.show) this.element.classList.add('hidden');
+            // // se falsy viene nascosto .a-color-picker-rgb
+            // if (!this.options.showRGB) this.element.className += ' hide-rgb';
+            // // se falsy viene nascosto .a-color-picker-hsl
+            // if (!this.options.showHSL) this.element.className += ' hide-hsl';
+            // // se falsy viene nascosto .a-color-picker-single-input (css hex)
+            // if (!this.options.showHEX) this.element.className += ' hide-single-input';
+            // // se falsy viene nascosto .a-color-picker-a
+            // if (!this.options.showAlpha) this.element.className += ' hide-alpha';
             this.element.innerHTML = HTML_BOX;
             container.appendChild(this.element);
 
+            if(this.options.open) this.element.setAttribute('open');
+
             if ('EyeDropper' in window) {
+                // The API is available!
+
                 let ed = this.element.querySelector('.a-color-picker-eyedropper');
                 const eyeDropper = new EyeDropper();
                 ed.addEventListener('click', (e) => {
@@ -323,16 +343,21 @@ class ColorPicker {
             }else{
                 this.element.dataset.noEyeDropper;
             }
+            // preparo il canvas con tutto lo spettro del HUE (da 0 a 360)
+            // in base al valore selezionato su questo canvas verrà disegnato il canvas per SL
             const hueBar = this.element.querySelector('.a-color-picker-h');
             this.setupHueCanvas(hueBar);
             this.hueBarHelper = canvasHelper(hueBar);
             this.huePointer = this.element.querySelector('.a-color-picker-h+.a-color-picker-dot');
+            // preparo il canvas per SL (saturation e luminance)
             const slBar = this.element.querySelector('.a-color-picker-sl');
             this.setupSlCanvas(slBar);
             this.slBarHelper = canvasHelper(slBar);
             this.slPointer = this.element.querySelector('.a-color-picker-sl+.a-color-picker-dot');
+            // preparo il box della preview
             this.preview = this.element.querySelector('.a-color-picker-preview');
             this.setupClipboard(this.preview.querySelector('.a-color-picker-clipbaord'));
+            // prearo gli input box
             if (this.options.showHSL) {
                 this.setupInput(this.inputH = this.element.querySelector('.a-color-picker-hsl>input[nameref=H]'));
                 this.setupInput(this.inputS = this.element.querySelector('.a-color-picker-hsl>input[nameref=S]'));
@@ -358,6 +383,7 @@ class ColorPicker {
                 this.paletteRow = this.element.querySelector('.a-color-picker-palette');
                 this.paletteRow.remove();
             }
+            // preparo in canvas per l'opacità
             if (this.options.showAlpha) {
                 this.setupAlphaCanvas(this.element.querySelector('.a-color-picker-a'));
                 this.alphaPointer = this.element.querySelector('.a-color-picker-a+.a-color-picker-dot');
@@ -871,6 +897,7 @@ class EventEmitter {
 //     }
 // }
 
+
 /**
  * Crea il color picker.
  * Le opzioni sono:
@@ -897,6 +924,29 @@ function createPicker(element, options) {
     let isChanged = true,
         // memoize per la proprietà all
         memAll = {};
+
+    let _addGloablListeners = function(remove){
+        if(!remove){
+            window.addEventListener('click', _onMouseDown, true);
+            window.addEventListener('keydown', _onKeyDown, true);
+        }else{
+            window.removeEventListener('click', _onMouseDown, true);
+            window.removeEventListener('keydown', _onKeyDown, true);
+        }
+
+    }
+
+    let _onMouseDown= function(e){
+        if(picker.element.contains(e.target)) return;
+        controller.hide();
+    }
+
+    let _onKeyDown= function(e){
+        if(e.key.toUpperCase() !== 'ESCAPE' || picker.element.contains(e.target)) return;
+        controller.hide();
+    }
+
+    let callback;
     // non permetto l'accesso diretto al picker
     // ma ritorno un "controller" per eseguire solo alcune azioni (get/set colore, eventi, etc.)
     const controller = {
@@ -1074,11 +1124,37 @@ function createPicker(element, options) {
             picker.element.classList.remove('hidden');
         },
 
+        openPicker({target, x,y, color}, cb){
+            console.warn(target);
+
+            if(target && (!x || !y)){
+                let bbox = target.getBoundingClientRect();
+                x = bbox.x;
+                y = bbox.y;
+            }
+            if(isNaN(x)) x = window.innerWidth*.5;
+            if(isNaN(y)) y = 0;
+            picker.element.style.transform = "translate(" + (x) + "px," + (y) + "px)";
+            picker.element.classList.remove('hidden');
+            console.warn('OPEN PICKER TO: %s, %s', x, y);
+            console.warn('SET COLOR %s', color)
+            color = parseColor(color || '#000', 'rgba');
+            picker.onValueChanged(COLOR, color, { silent: true })
+            _addGloablListeners();
+            if(cb) {
+                callback = cb;
+                this.on('change', callback);
+            }
+        },
+
         /**
          * Nasconde il picker
          */
         hide() {
             picker.element.classList.add('hidden');
+            _addGloablListeners(true);
+            if(callback) this.off('change', callback);
+            callback = null;
         },
 
         /**
@@ -1086,7 +1162,14 @@ function createPicker(element, options) {
          */
         toggle() {
             picker.element.classList.toggle('hidden');
+            _addGloablListeners(picker.classList.contains('hidden'));
+            if(picker.element.classList.contains('hidden') && callback){
+                this.off('change', callback);
+                callback = null;
+            }
         },
+
+
 
         on(eventName, cb) {
             if (eventName) {
@@ -1103,6 +1186,7 @@ function createPicker(element, options) {
         },
 
         destroy() {
+            window.removeEventListener('click', this.onmouseDown, true);
             cbEvents.change.off()
             cbEvents.coloradd.off()
             cbEvents.colorremove.off()
@@ -1152,21 +1236,6 @@ function from(selector, options) {
         return this;
     };
     return pickers;
-}
-
-if (typeof window !== 'undefined') {
-    // solo in ambiente browser inserisco direttamente nella pagina html il css
-    //  per sicurezza controllo che non sia già presente
-    /*if (!document.querySelector('head>style[data-source="a-color-picker"]')) {
-        // eslint-disable-next-line global-require,  no-undef
-        const css = require('./acolorpicker.css').toString();
-        const style = document.createElement('style');
-        style.setAttribute('type', 'text/css');
-        style.setAttribute('data-source', 'a-color-picker');
-        style.innerHTML = css;
-        // TODO: verificare che esista <head>
-        document.querySelector('head').appendChild(style);
-    }*/
 }
 
 export default {
