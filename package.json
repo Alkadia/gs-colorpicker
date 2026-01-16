@@ -4,16 +4,10 @@
   "description": "a color pikcer for GS web applications",
   "main": "./dist/gs-colorpicker.js",
   "types": "./dist/gs-colorpicker.d.ts",
-  "scripts": {
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && webpack --config webpack.prod.js",
-    "build:dev": "export NODE_OPTIONS=--openssl-legacy-provider &&  webpack --display-used-exports --display-reasons --config webpack.dev.js",
-    "build:docs": "export NODE_OPTIONS=--openssl-legacy-provider && webpack --config webpack.docs.js",
-    "start:docs": "export NODE_OPTIONS=--openssl-legacy-provider && webpack-dev-server --open --open-page index.html --port 3000 --config webpack.docs.js",
-    "test": "export NODE_OPTIONS=--openssl-legacy-provider && rm -rf node_modules package-lock.jsonwebpack-dev-server --open --open-page test.html --port 3000 --config webpack.dev.js"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Alkadia/a-color-picker.git"
+    "url": "git+https://github.com/Alkadia/gs-colorpicker.git"
   },
   "keywords": [
     "javascript",
@@ -24,9 +18,9 @@
   "author": "Alkadia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Alkadia/a-color-picker/issues"
+    "url": "https://github.com/Alkadia/gs-colorpicker/issues"
   },
-  "homepage": "https://github.com/Alkadia/a-color-picker/",
+  "homepage": "https://github.com/Alkadia/gs-colorpicker/",
   "devDependencies": {
     "del": "^8.0.1",
     "gulp": "^5.0.1",
