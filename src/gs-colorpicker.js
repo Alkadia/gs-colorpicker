@@ -29,8 +29,61 @@ import {
     ensureArray,
     nvl
 } from './utils.js';
-import isPlainObject from 'is-plain-object';
-import HTML_BOX from './acolorpicker.html';
+const isPlainObject = value => value?.constructor === Object;
+
+
+
+let  HTML_BOX = `
+<div class="a-color-picker-row a-color-picker-stack a-color-picker-row-top">
+    <canvas class="a-color-picker-sl a-color-picker-transparent"></canvas>
+    <div class="a-color-picker-dot"></div>
+</div>
+<div class="a-color-picker-row">
+    
+    <div class="a-color-picker-stack a-color-picker-transparent a-color-picker-circle">
+        
+        <div class="a-color-picker-preview">
+            <input class="a-color-picker-clipbaord" type="text">
+        </div>
+    </div>
+    <div class="a-color-picker-column">
+        <div class="a-color-picker-cell a-color-picker-stack">
+            <canvas class="a-color-picker-h"></canvas>
+            <div class="a-color-picker-dot"></div>
+        </div>
+        <div class="a-color-picker-cell a-color-picker-alpha a-color-picker-stack" show-on-alpha>
+            <canvas class="a-color-picker-a a-color-picker-transparent"></canvas>
+            <div class="a-color-picker-dot"></div>
+        </div>
+    </div>
+    
+    <div class="a-color-picker-stack a-color-picker-eyedropper">
+            <svg stroke-width="1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000"><path d="M7 13.161L12.4644 7.6966C12.8549 7.30607 13.4881 7.30607 13.8786 7.6966L15.9999 9.81792C16.3904 10.2084 16.3904 10.8416 15.9999 11.2321L14.0711 13.161M7 13.161L4.82764 15.3334C4.73428 15.4267 4.66034 15.5376 4.61007 15.6597L3.58204 18.1563C3.07438 19.3892 4.30728 20.6221 5.54018 20.1145L8.03681 19.0865C8.1589 19.0362 8.26981 18.9622 8.36317 18.8689L14.0711 13.161M7 13.161H14.0711" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.878 3.45401L15.9993 5.57533M20.242 9.81798L18.1206 7.69666M15.9993 5.57533L17.4135 4.16112C17.8041 3.7706 18.4372 3.7706 18.8277 4.16112L19.5349 4.86823C19.9254 5.25875 19.9254 5.89192 19.5349 6.28244L18.1206 7.69666M15.9993 5.57533L18.1206 7.69666" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </div>
+    
+</div>
+<div class="a-color-picker-row a-color-picker-hsl" show-on-hsl>
+    <label>H</label>
+    <input nameref="H" type="number" maxlength="3" min="0" max="360" value="0">
+    <label>S</label>
+    <input nameref="S" type="number" maxlength="3" min="0" max="100" value="0">
+    <label>L</label>
+    <input nameref="L" type="number" maxlength="3" min="0" max="100" value="0">
+</div>
+<div class="a-color-picker-row a-color-picker-rgb" show-on-rgb>
+    <label>R</label>
+    <input nameref="R" type="number" maxlength="3" min="0" max="255" value="0">
+    <label>G</label>
+    <input nameref="G" type="number" maxlength="3" min="0" max="255" value="0">
+    <label>B</label>
+    <input nameref="B" type="number" maxlength="3" min="0" max="255" value="0">
+</div>
+<div class="a-color-picker-row a-color-picker-rgbhex a-color-picker-single-input" show-on-single-input>
+    <label>HEX</label>
+    <input nameref="RGBHEX" type="text" pleceholder="HEX" select-on-focus>
+</div>
+<div class="a-color-picker-row a-color-picker-palette"></div>
+`;
 
 const VERSION = '1.2.2';
 
@@ -49,8 +102,8 @@ const DEFAULT = {
     paletteEditable: false,
     useAlphaInPalette: 'auto', //true|false|auto
     slBarSize: [232, 150],
-    hueBarSize: [150, 11],
-    alphaBarSize: [150, 11]
+    hueBarSize: [130, 11],
+    alphaBarSize: [130, 11]
 };
 
 const HUE = 'H',
@@ -215,6 +268,11 @@ function copyOptionsFromElement(options, element, attrPrefix = 'acp-') {
 }
 
 class ColorPicker {
+
+    static setHTMLTemplate(html){
+        HTML_BOX = html;
+    }
+
     constructor(container, options) {
         //controllo se siamo nel caso di options passato come primo parametro
         if (options) {
@@ -253,6 +311,7 @@ class ColorPicker {
                 this.element.id = this.options.id;
             }
             this.element.className = 'a-color-picker';
+            if (!this.options.show) this.element.classList.add('hidden');
             // // se falsy viene nascosto .a-color-picker-rgb
             // if (!this.options.showRGB) this.element.className += ' hide-rgb';
             // // se falsy viene nascosto .a-color-picker-hsl
@@ -263,6 +322,27 @@ class ColorPicker {
             // if (!this.options.showAlpha) this.element.className += ' hide-alpha';
             this.element.innerHTML = HTML_BOX;
             container.appendChild(this.element);
+
+            if(this.options.open) this.element.setAttribute('open');
+
+            if ('EyeDropper' in window) {
+                // The API is available!
+
+                let ed = this.element.querySelector('.a-color-picker-eyedropper');
+                const eyeDropper = new EyeDropper();
+                ed.addEventListener('click', (e) => {
+                    eyeDropper.open()
+                    .then((result) => {
+                        this.onValueChanged(RGBHEX, result.sRGBHex);
+                        console.warn('result', result)
+                    })
+                    .catch(() => {
+
+                    })
+                })
+            }else{
+                this.element.dataset.noEyeDropper;
+            }
             // preparo il canvas con tutto lo spettro del HUE (da 0 a 360)
             // in base al valore selezionato su questo canvas verrà disegnato il canvas per SL
             const hueBar = this.element.querySelector('.a-color-picker-h');
@@ -292,19 +372,14 @@ class ColorPicker {
             } else {
                 this.element.querySelector('.a-color-picker-rgb').remove();
             }
-            // preparo l'input per il formato hex css
             if (this.options.showHEX) {
                 this.setupInput(this.inputRGBHEX = this.element.querySelector('input[nameref=RGBHEX]'));
             } else {
                 this.element.querySelector('.a-color-picker-rgbhex').remove();
             }
-            // preparo la palette con i colori predefiniti
-            //  (palette può contenere sia un Array che una stringa, entrambi con prop length)
             if (this.options.paletteEditable || (this.options.palette && this.options.palette.length > 0)) {
                 this.setPalette(this.paletteRow = this.element.querySelector('.a-color-picker-palette'));
             } else {
-                // #17 se l'elemento della palette è rimosso non posso modificarne il contenuto a posteriori
-                // rimuovo l'elemento dal DOM ma non lo elimino, potrebbe servirmi in seguito
                 this.paletteRow = this.element.querySelector('.a-color-picker-palette');
                 this.paletteRow.remove();
             }
@@ -316,8 +391,10 @@ class ColorPicker {
                 this.element.querySelector('.a-color-picker-alpha').remove();
             }
             this.element.style.width = `${this.options.slBarSize[0]}px`;
-            // imposto il colore iniziale
             this.onValueChanged(COLOR, this.options.color);
+            if(this.options.afterTemplateConfiguration && typeof this.options.afterTemplateConfiguration === 'function'){
+                this.options.afterTemplateConfiguration.call(this)
+            }
         } else {
             throw new Error(`Container not found: ${this.options.attachTo}`);
         }
@@ -326,8 +403,6 @@ class ColorPicker {
     setupHueCanvas(canvas) {
         canvas.width = this.options.hueBarSize[0];
         canvas.height = this.options.hueBarSize[1];
-        // disegno sul canvas applicando un gradiente lineare che copra tutti i possibili valori di HUE
-        //  quindi ci vogliono 361 stop (da 0 a 360), mantendo fisse S e L
         const ctx = canvas.getContext('2d'),
             gradient = ctx.createLinearGradient(0, 0, this.options.hueBarSize[0], 0),
             step = 1 / 360;
@@ -337,11 +412,6 @@ class ColorPicker {
         }
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.options.hueBarSize[0], this.options.hueBarSize[1]);
-        // gestisco gli eventi per la selezione del valore e segnalo il cambiamento tramite callbak
-        // una volta che il puntatore è premuto sul canvas (mousedown)
-        // intercetto le variazioni nella posizione del puntatore (mousemove)
-        // relativamente al document, in modo che il puntatore in movimento possa uscire dal canvas
-        // una volta sollevato (mouseup) elimino i listener
         const onMouseMove = (e) => {
             const x = limit(e.clientX - canvas.getBoundingClientRect().left, 0, this.options.hueBarSize[0]),
                 hue = Math.round(x * 360 / this.options.hueBarSize[0]);
@@ -827,6 +897,7 @@ class EventEmitter {
 //     }
 // }
 
+
 /**
  * Crea il color picker.
  * Le opzioni sono:
@@ -853,6 +924,29 @@ function createPicker(element, options) {
     let isChanged = true,
         // memoize per la proprietà all
         memAll = {};
+
+    let _addGloablListeners = function(remove){
+        if(!remove){
+            window.addEventListener('click', _onMouseDown, true);
+            window.addEventListener('keydown', _onKeyDown, true);
+        }else{
+            window.removeEventListener('click', _onMouseDown, true);
+            window.removeEventListener('keydown', _onKeyDown, true);
+        }
+
+    }
+
+    let _onMouseDown= function(e){
+        if(picker.element.contains(e.target)) return;
+        controller.hide();
+    }
+
+    let _onKeyDown= function(e){
+        if(e.key.toUpperCase() !== 'ESCAPE' || picker.element.contains(e.target)) return;
+        controller.hide();
+    }
+
+    let callback;
     // non permetto l'accesso diretto al picker
     // ma ritorno un "controller" per eseguire solo alcune azioni (get/set colore, eventi, etc.)
     const controller = {
@@ -1030,11 +1124,37 @@ function createPicker(element, options) {
             picker.element.classList.remove('hidden');
         },
 
+        openPicker({target, x,y, color}, cb){
+            console.warn(target);
+
+            if(target && (!x || !y)){
+                let bbox = target.getBoundingClientRect();
+                x = bbox.x;
+                y = bbox.y;
+            }
+            if(isNaN(x)) x = window.innerWidth*.5;
+            if(isNaN(y)) y = 0;
+            picker.element.style.transform = "translate(" + (x) + "px," + (y) + "px)";
+            picker.element.classList.remove('hidden');
+            console.warn('OPEN PICKER TO: %s, %s', x, y);
+            console.warn('SET COLOR %s', color)
+            color = parseColor(color || '#000', 'rgba');
+            picker.onValueChanged(COLOR, color, { silent: true })
+            _addGloablListeners();
+            if(cb) {
+                callback = cb;
+                this.on('change', callback);
+            }
+        },
+
         /**
          * Nasconde il picker
          */
         hide() {
             picker.element.classList.add('hidden');
+            _addGloablListeners(true);
+            if(callback) this.off('change', callback);
+            callback = null;
         },
 
         /**
@@ -1042,7 +1162,14 @@ function createPicker(element, options) {
          */
         toggle() {
             picker.element.classList.toggle('hidden');
+            _addGloablListeners(picker.classList.contains('hidden'));
+            if(picker.element.classList.contains('hidden') && callback){
+                this.off('change', callback);
+                callback = null;
+            }
         },
+
+
 
         on(eventName, cb) {
             if (eventName) {
@@ -1059,6 +1186,7 @@ function createPicker(element, options) {
         },
 
         destroy() {
+            window.removeEventListener('click', this.onmouseDown, true);
             cbEvents.change.off()
             cbEvents.coloradd.off()
             cbEvents.colorremove.off()
@@ -1110,22 +1238,7 @@ function from(selector, options) {
     return pickers;
 }
 
-if (typeof window !== 'undefined') {
-    // solo in ambiente browser inserisco direttamente nella pagina html il css
-    //  per sicurezza controllo che non sia già presente
-    if (!document.querySelector('head>style[data-source="a-color-picker"]')) {
-        // eslint-disable-next-line global-require,  no-undef
-        const css = require('./acolorpicker.css').toString();
-        const style = document.createElement('style');
-        style.setAttribute('type', 'text/css');
-        style.setAttribute('data-source', 'a-color-picker');
-        style.innerHTML = css;
-        // TODO: verificare che esista <head>
-        document.querySelector('head').appendChild(style);
-    }
-}
-
-export {
+export default {
     createPicker,
     from,
     parseColorToRgb,

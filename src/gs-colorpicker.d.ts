@@ -1,6 +1,6 @@
-declare module 'a-color-picker';
+declare module 'gs-colorpicker';
 
-declare namespace AColorPicker {
+declare namespace GSColorPicker{
 
     type OutFormat = (
         'rgb' | 'rgbcss' | 'rgbcss4' | 'rgba' | 'rgbacss' |
@@ -76,4 +76,4 @@ declare namespace AColorPicker {
     export function from(selector: any, options?: Object): Array<ACPController>;
 }
 
-export = AColorPicker;
+export = GSColorPicker;

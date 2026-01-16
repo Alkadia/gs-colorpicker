@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+    <link href="gs-colorpicker.css" rel="stylesheet">
+</head>
+
+<body>
+<div class="picker"></div>
+<div class="container">
+    <button id="test" class="button">OPEN PICKER</button>
+</div>
+
+<script type="module">
+    import { default as GSColorPicker} from "./gs-colorpicker.js";
+    const toggler = document.getElementById('test');
+    const pickerOptions = {
+        color: 'rgba(255,0,0,0.5)',
+        showAlpha: true,
+        showHSL: false,
+        showHEX: true,
+        useAlphaInPalette: true,
+        paletteEditable: true,
+        afterTemplateConfiguration: function(){
+            console.info('AFTER PICKER CONFIGURATION', this);
+        }
+    }
+
+    const myPicker = GSColorPicker.createPicker(pickerOptions)
+
+    toggler.addEventListener('click', (e) => {
+        myPicker.openPicker({target: e.target, x1: e.clientX, y1: e.clientY, color: '#ccc'}, (picker, color) => {
+            console.info('---->', color, picker.rgba, picker.rgb);
+        });
+    })
+
+</script>
+</body>
+</html>
