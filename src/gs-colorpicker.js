@@ -39,14 +39,14 @@ let  HTML_BOX = `
     <div class="a-color-picker-dot"></div>
 </div>
 <div class="a-color-picker-row">
-    
+   
     <div class="a-color-picker-stack a-color-picker-transparent a-color-picker-circle">
-        
         <div class="a-color-picker-preview">
             <input class="a-color-picker-clipbaord" type="text">
         </div>
     </div>
-    <div class="a-color-picker-column">
+    
+    <div class="a-color-picker-column color-sliders">
         <div class="a-color-picker-cell a-color-picker-stack">
             <canvas class="a-color-picker-h"></canvas>
             <div class="a-color-picker-dot"></div>
@@ -897,7 +897,21 @@ class EventEmitter {
 //     }
 // }
 
+function keepInViewport (el, targetX, targetY) {
+    const rect = el.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    console.info(rect);
 
+    // Calculate maximum allowed coordinates
+    const maxX = viewportWidth - rect.width;
+    const maxY = viewportHeight - rect.height;
+
+    // Clamp values between 0 and the max allowed
+    const safeX = Math.max(0, Math.min(targetX, maxX));
+    const safeY = Math.max(0, Math.min(targetY, maxY));
+    el.style.transform = `translate(${safeX}px, ${safeY}px)`;
+}
 /**
  * Crea il color picker.
  * Le opzioni sono:
@@ -928,12 +942,13 @@ function createPicker(element, options) {
     let _addGloablListeners = function(remove){
         if(!remove){
             window.addEventListener('click', _onMouseDown, true);
+            window.addEventListener('mousedown', _onMouseDown, true);
             window.addEventListener('keydown', _onKeyDown, true);
         }else{
             window.removeEventListener('click', _onMouseDown, true);
+            window.removeEventListener('mousedown', _onMouseDown, true);
             window.removeEventListener('keydown', _onKeyDown, true);
         }
-
     }
 
     let _onMouseDown= function(e){
@@ -945,6 +960,7 @@ function createPicker(element, options) {
         if(e.key.toUpperCase() !== 'ESCAPE' || picker.element.contains(e.target)) return;
         controller.hide();
     }
+
 
     let callback;
     // non permetto l'accesso diretto al picker
@@ -1130,16 +1146,16 @@ function createPicker(element, options) {
             if(target && (!x || !y)){
                 let bbox = target.getBoundingClientRect();
                 x = bbox.x;
-                y = bbox.y;
+                y = bbox.y+bbox.height;
             }
             if(isNaN(x)) x = window.innerWidth*.5;
             if(isNaN(y)) y = 0;
-            picker.element.style.transform = "translate(" + (x) + "px," + (y) + "px)";
+            //picker.element.style.transform = "translate(" + (x) + "px," + (y) + "px)";
+            keepInViewport(picker.element, x, y)
             picker.element.classList.remove('hidden');
-            console.warn('OPEN PICKER TO: %s, %s', x, y);
-            console.warn('SET COLOR %s', color)
             color = parseColor(color || '#000', 'rgba');
-            picker.onValueChanged(COLOR, color, { silent: true })
+            picker.onValueChanged(COLOR, color, { silent: true });
+
             _addGloablListeners();
             if(cb) {
                 callback = cb;

@@ -9,7 +9,12 @@
 
 :root{
     --color-picker-border-radius: 8px;
+    --color-picker-width: 300px;
+    --color-picker-base-space: 15px;
+    --color-picker-preview-color-size: 30px;
+    --color-picker-eyedrop-size: 16px;
 }
+
 
 .a-color-picker {
     position: fixed;
@@ -124,8 +129,9 @@
 .a-color-picker-rgb>input,
 .a-color-picker-single-input>input {
     text-align: center;
-    padding: 2px 0;
+    padding: 6px 0;
     width: 0;
+    font-size: inherit;
     flex: 1 1 auto;
     border: 1px solid #e0e0e0;
     line-height: 20px;
@@ -197,8 +203,10 @@
     color: #607D8B;
 }
 
+.a-color-picker.hidden *,
 .a-color-picker.hidden {
-    display: none;
+    visibility: hidden!important;
+    pointer-events: none!important;
 }
 
 

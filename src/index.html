@@ -5,6 +5,13 @@
     <title>Title</title>
     <link rel="stylesheet" href="https://unpkg.com/chota@latest">
     <link href="gs-colorpicker.css" rel="stylesheet">
+    <style>
+        #test {
+            position: fixed;
+            white-space: nowrap;
+            cursor: move;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,13 +23,48 @@
 <script type="module">
     import { default as GSColorPicker} from "./gs-colorpicker.js";
     const toggler = document.getElementById('test');
+    let _mouseStartPos = { x : 0, y: 0 };
+    let _togglerPosition = toggler.getBoundingClientRect();
+    let _preventOpenAfterDrag = false;
+    function moveTriggerButton(e){
+        e.stopPropagation();
+        e.preventDefault();
+        let deltaX = e.pageX - _mouseStartPos.x;
+        let deltaY = e.pageY - _mouseStartPos.y;
+        let transform = `translate(${deltaX}px, ${ deltaY}px)`;
+        _preventOpenAfterDrag = true;
+        window.requestAnimationFrame(() => {
+            toggler.style.transform = transform;
+        });
+    }
+
+    toggler.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        _mouseStartPos.x = e.pageX;
+        _mouseStartPos.y = e.pageY;
+        _togglerPosition = toggler.getBoundingClientRect();
+        console.warn(_mouseStartPos);
+        window.addEventListener('mousemove', moveTriggerButton);
+        window.addEventListener('mouseup', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            _togglerPosition = toggler.getBoundingClientRect();
+            toggler.style.left = `${_togglerPosition.x}px`;
+            toggler.style.top = `${_togglerPosition.y}px`;
+            toggler.style.transform = 'none';
+            window.removeEventListener('mousemove', moveTriggerButton);
+        });
+    })
     const pickerOptions = {
         color: 'rgba(255,0,0,0.5)',
-        showAlpha: true,
+        showAlpha: false,
         showHSL: false,
         showHEX: true,
         useAlphaInPalette: true,
         paletteEditable: true,
+        slBarSize: [280, 150],
+        hueBarSize: [160, 11],
+        alphaBarSize: [160, 11],
         afterTemplateConfiguration: function(){
             console.info('AFTER PICKER CONFIGURATION', this);
         }
