@@ -1,5 +1,5 @@
-
-![gs-colorpicker screenshot](/screenshots/screenshot_all.png)
+## Preview
+![gs-colorpicker screenshot](/screenshots/gs-colorpicker-preview.png)
 
 ## Usage
 1. In the browser:
