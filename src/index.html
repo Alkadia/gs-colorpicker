@@ -11,14 +11,33 @@
             white-space: nowrap;
             cursor: move;
         }
+        .container {
+            margin: 0 auto;
+            max-width: 980px;
+        }
     </style>
+
 </head>
 
 <body>
+<div class="container">
+    <label>Select an option   </label>
+    <select class="select" id="changeOptions">
+        <option disabled selected>Choose a Picker Option</option>
+        <option value="default">GS Default</option>
+        <option value="showAlpha">With Alpha Slider</option>
+        <option value="showHSL">With HSL Inputs</option>
+    </select>
+
+</div>
 <div class="picker"></div>
 <div class="container">
-    <button id="test" class="button">OPEN PICKER</button>
+    <button id="test2" class="btn btn-soft btn-info">OPEN PICKER 2</button>
 </div>
+<div class="container">
+    <button id="test" class="btn btn-soft btn-info">DRAG OR CLICK TO OPEN PICKER</button>
+</div>
+
 
 <script type="module">
     import { default as GSColorPicker} from "./gs-colorpicker.js";
@@ -27,6 +46,7 @@
     let _togglerPosition = toggler.getBoundingClientRect();
     let _preventOpenAfterDrag = false;
     function moveTriggerButton(e){
+        dragged = true;
         e.stopPropagation();
         e.preventDefault();
         let deltaX = e.pageX - _mouseStartPos.x;
@@ -38,6 +58,8 @@
         });
     }
 
+
+    let dragged = false;
     toggler.addEventListener('mousedown', (e) => {
         e.stopPropagation();
         _mouseStartPos.x = e.pageX;
@@ -53,6 +75,7 @@
             toggler.style.top = `${_togglerPosition.y}px`;
             toggler.style.transform = 'none';
             window.removeEventListener('mousemove', moveTriggerButton);
+
         });
     })
     const pickerOptions = {
@@ -70,11 +93,44 @@
         }
     }
 
-    const myPicker = GSColorPicker.createPicker(pickerOptions)
+    changeOptions.addEventListener('change', (e) => {
+        switch(e.currentTarget.value){
+            case 'default':
+                pickerOptions.showAlpha = false;
+                pickerOptions.showHSL = false;
+                break;
+            case 'showAlpha':
+                pickerOptions.showAlpha = true;
+                pickerOptions.showHSL = false;
+            break;
+            case 'showHSL':
+                pickerOptions.showAlpha = false;
+                pickerOptions.showHSL = true;
+                pickerOptions.showRGB = false;
+                break;
+        }
+        myPicker.setOptions(pickerOptions);
+        console.info('OPTION %s', e.currentTarget.value);
+    })
+
+    const myPicker = GSColorPicker.createPicker(pickerOptions);
+    const myPicker2 = GSColorPicker.createPicker(pickerOptions)
 
     toggler.addEventListener('click', (e) => {
-        myPicker.openPicker({target: e.target, x1: e.clientX, y1: e.clientY, color: '#ccc'}, (picker, color) => {
-            console.info('---->', color, picker.rgba, picker.rgb);
+        if(dragged) {
+
+            dragged = false;
+            e.preventDefault()
+            return;
+        }
+        myPicker.openPicker({target: e.currentTarget, x1: e.clientX, y1: e.clientY, color: '#30ab5d'}, (picker, color) => {
+            console.info('PICKER "1" ----->', picker.color);
+        });
+    })
+
+    test2.addEventListener('click', (e) => {
+        myPicker2.openPicker({target: e.currentTarget, x1: e.clientX, y1: e.clientY, color: '#61259c'}, (picker, color) => {
+            console.info('PICKER "2" ----->', picker.color);
         });
     })
 

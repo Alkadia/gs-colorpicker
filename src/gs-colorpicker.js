@@ -1,9 +1,9 @@
 // @ts-check
 /*!
- * a-color-picker
- * https://github.com/narsenico/a-color-picker
+ * gs-colorpicker
+ * https://github.com/Alkadia/gs-colorpicker
  *
- * Copyright (c) 2017-2019, Gianfranco Caldi.
+ * Copyright (c) 2026, Alkadia.
  * Released under the MIT License.
  */
 
@@ -31,38 +31,36 @@ import {
 } from './utils.js';
 const isPlainObject = value => value?.constructor === Object;
 
-
-
 let  HTML_BOX = `
-<div class="a-color-picker-row a-color-picker-stack a-color-picker-row-top">
-    <canvas class="a-color-picker-sl a-color-picker-transparent"></canvas>
-    <div class="a-color-picker-dot"></div>
+<div class="gs-colorpicker-row gs-colorpicker-stack gs-colorpicker-row-top">
+    <canvas class="gs-colorpicker-sl gs-colorpicker-transparent"></canvas>
+    <div class="gs-colorpicker-dot"></div>
 </div>
-<div class="a-color-picker-row">
+<div class="gs-colorpicker-row">
    
-    <div class="a-color-picker-stack a-color-picker-transparent a-color-picker-circle">
-        <div class="a-color-picker-preview">
-            <input class="a-color-picker-clipbaord" type="text">
+    <div class="gs-colorpicker-stack gs-colorpicker-transparent gs-colorpicker-circle">
+        <div class="gs-colorpicker-preview">
+            <input class="gs-colorpicker-clipbaord" type="text">
         </div>
     </div>
     
-    <div class="a-color-picker-column color-sliders">
-        <div class="a-color-picker-cell a-color-picker-stack">
-            <canvas class="a-color-picker-h"></canvas>
-            <div class="a-color-picker-dot"></div>
+    <div class="gs-colorpicker-column color-sliders">
+        <div class="gs-colorpicker-cell gs-colorpicker-stack">
+            <canvas class="gs-colorpicker-h"></canvas>
+            <div class="gs-colorpicker-dot"></div>
         </div>
-        <div class="a-color-picker-cell a-color-picker-alpha a-color-picker-stack" show-on-alpha>
-            <canvas class="a-color-picker-a a-color-picker-transparent"></canvas>
-            <div class="a-color-picker-dot"></div>
+        <div class="gs-colorpicker-cell gs-colorpicker-alpha gs-colorpicker-stack" show-on-alpha>
+            <canvas class="gs-colorpicker-a gs-colorpicker-transparent"></canvas>
+            <div class="gs-colorpicker-dot"></div>
         </div>
     </div>
     
-    <div class="a-color-picker-stack a-color-picker-eyedropper">
+    <div class="gs-colorpicker-stack gs-colorpicker-eyedropper">
             <svg stroke-width="1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000"><path d="M7 13.161L12.4644 7.6966C12.8549 7.30607 13.4881 7.30607 13.8786 7.6966L15.9999 9.81792C16.3904 10.2084 16.3904 10.8416 15.9999 11.2321L14.0711 13.161M7 13.161L4.82764 15.3334C4.73428 15.4267 4.66034 15.5376 4.61007 15.6597L3.58204 18.1563C3.07438 19.3892 4.30728 20.6221 5.54018 20.1145L8.03681 19.0865C8.1589 19.0362 8.26981 18.9622 8.36317 18.8689L14.0711 13.161M7 13.161H14.0711" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.878 3.45401L15.9993 5.57533M20.242 9.81798L18.1206 7.69666M15.9993 5.57533L17.4135 4.16112C17.8041 3.7706 18.4372 3.7706 18.8277 4.16112L19.5349 4.86823C19.9254 5.25875 19.9254 5.89192 19.5349 6.28244L18.1206 7.69666M15.9993 5.57533L18.1206 7.69666" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
     </div>
     
 </div>
-<div class="a-color-picker-row a-color-picker-hsl" show-on-hsl>
+<div class="gs-colorpicker-row gs-colorpicker-hsl" show-on-hsl>
     <label>H</label>
     <input nameref="H" type="number" maxlength="3" min="0" max="360" value="0">
     <label>S</label>
@@ -70,7 +68,7 @@ let  HTML_BOX = `
     <label>L</label>
     <input nameref="L" type="number" maxlength="3" min="0" max="100" value="0">
 </div>
-<div class="a-color-picker-row a-color-picker-rgb" show-on-rgb>
+<div class="gs-colorpicker-row gs-colorpicker-rgb" show-on-rgb>
     <label>R</label>
     <input nameref="R" type="number" maxlength="3" min="0" max="255" value="0">
     <label>G</label>
@@ -78,11 +76,11 @@ let  HTML_BOX = `
     <label>B</label>
     <input nameref="B" type="number" maxlength="3" min="0" max="255" value="0">
 </div>
-<div class="a-color-picker-row a-color-picker-rgbhex a-color-picker-single-input" show-on-single-input>
+<div class="gs-colorpicker-row gs-colorpicker-rgbhex gs-colorpicker-single-input" show-on-single-input>
     <label>HEX</label>
     <input nameref="RGBHEX" type="text" pleceholder="HEX" select-on-focus>
 </div>
-<div class="a-color-picker-row a-color-picker-palette"></div>
+<div class="gs-colorpicker-row gs-colorpicker-palette"></div>
 `;
 
 const VERSION = '1.2.2';
@@ -273,131 +271,152 @@ class ColorPicker {
         HTML_BOX = html;
     }
 
+    #defaultOptions = {
+        id: null,
+        attachTo: 'body',
+        showHSL: true,
+        showRGB: true,
+        showHEX: true,
+        showAlpha: false,
+        color: '#ff0000',
+        palette: null,
+        paletteEditable: false,
+        useAlphaInPalette: 'auto', //true|false|auto
+        slBarSize: [232, 150],
+        hueBarSize: [130, 11],
+        alphaBarSize: [130, 11]
+    }
+
     constructor(container, options) {
-        //controllo se siamo nel caso di options passato come primo parametro
-        if (options) {
-            container = parseElement(container);
-            this.options = Object.assign({}, DEFAULT, options);
-        } else if (container && isPlainObject(container)) {
-            // se non trovo options e container è un {} lo considero il vero options
-            this.options = Object.assign({}, DEFAULT, container);
-            container = parseElement(this.options.attachTo);
-        } else {
-            // altrimenti uso le opzioni di default
-            this.options = Object.assign({}, DEFAULT);
-            // nel caso non vengano proprio passati parametri, considero attachTo di default
-            container = parseElement(nvl(container, this.options.attachTo));
+        console.warn(container, options);
+        switch(container instanceof HTMLElement) {
+            case true:
+                this.container = parseElement(container);
+                this.options = Object.assign({}, this.#defaultOptions, options);
+                break;
+            default:
+                options = (container && isPlainObject(container) ? container : (options || {}));
+                if(container && isPlainObject(container)) container = null;
+                this.options = Object.assign({}, this.#defaultOptions, options);
+                this.container = parseElement(nvl(container, this.options.attachTo));
+                break;
         }
-
-        if (container) {
-            // le opzioni possono essere specificate come attributi dell'elemento contenitore
-            // quelle presenti sostituiranno le corrispondenti passate con il parametro options
-            copyOptionsFromElement(this.options, container);
-
-            this.H = 0;
-            this.S = 0;
-            this.L = 0;
-            this.R = 0;
-            this.G = 0;
-            this.B = 0;
-            this.A = 1;
-            // andrà a contenere la palette di colori effettivamente usata
-            // compresi i colori aggiunti o rimossi dall'utente, non sarà modificabile dirretamente dall'utente
-            this.palette = { /*<color>: boolean*/ };
-
-            // creo gli elementi HTML e li aggiungo al container
-            this.element = document.createElement('div');
-            if (this.options.id) {
-                this.element.id = this.options.id;
-            }
-            this.element.className = 'a-color-picker';
-            if (!this.options.show) this.element.classList.add('hidden');
-            // // se falsy viene nascosto .a-color-picker-rgb
-            // if (!this.options.showRGB) this.element.className += ' hide-rgb';
-            // // se falsy viene nascosto .a-color-picker-hsl
-            // if (!this.options.showHSL) this.element.className += ' hide-hsl';
-            // // se falsy viene nascosto .a-color-picker-single-input (css hex)
-            // if (!this.options.showHEX) this.element.className += ' hide-single-input';
-            // // se falsy viene nascosto .a-color-picker-a
-            // if (!this.options.showAlpha) this.element.className += ' hide-alpha';
-            this.element.innerHTML = HTML_BOX;
-            container.appendChild(this.element);
-
-            if(this.options.open) this.element.setAttribute('open');
-
-            if ('EyeDropper' in window) {
-                // The API is available!
-
-                let ed = this.element.querySelector('.a-color-picker-eyedropper');
-                const eyeDropper = new EyeDropper();
-                ed.addEventListener('click', (e) => {
-                    eyeDropper.open()
-                    .then((result) => {
-                        this.onValueChanged(RGBHEX, result.sRGBHex);
-                        console.warn('result', result)
-                    })
-                    .catch(() => {
-
-                    })
-                })
-            }else{
-                this.element.dataset.noEyeDropper;
-            }
-            // preparo il canvas con tutto lo spettro del HUE (da 0 a 360)
-            // in base al valore selezionato su questo canvas verrà disegnato il canvas per SL
-            const hueBar = this.element.querySelector('.a-color-picker-h');
-            this.setupHueCanvas(hueBar);
-            this.hueBarHelper = canvasHelper(hueBar);
-            this.huePointer = this.element.querySelector('.a-color-picker-h+.a-color-picker-dot');
-            // preparo il canvas per SL (saturation e luminance)
-            const slBar = this.element.querySelector('.a-color-picker-sl');
-            this.setupSlCanvas(slBar);
-            this.slBarHelper = canvasHelper(slBar);
-            this.slPointer = this.element.querySelector('.a-color-picker-sl+.a-color-picker-dot');
-            // preparo il box della preview
-            this.preview = this.element.querySelector('.a-color-picker-preview');
-            this.setupClipboard(this.preview.querySelector('.a-color-picker-clipbaord'));
-            // prearo gli input box
-            if (this.options.showHSL) {
-                this.setupInput(this.inputH = this.element.querySelector('.a-color-picker-hsl>input[nameref=H]'));
-                this.setupInput(this.inputS = this.element.querySelector('.a-color-picker-hsl>input[nameref=S]'));
-                this.setupInput(this.inputL = this.element.querySelector('.a-color-picker-hsl>input[nameref=L]'));
-            } else {
-                this.element.querySelector('.a-color-picker-hsl').remove();
-            }
-            if (this.options.showRGB) {
-                this.setupInput(this.inputR = this.element.querySelector('.a-color-picker-rgb>input[nameref=R]'));
-                this.setupInput(this.inputG = this.element.querySelector('.a-color-picker-rgb>input[nameref=G]'));
-                this.setupInput(this.inputB = this.element.querySelector('.a-color-picker-rgb>input[nameref=B]'));
-            } else {
-                this.element.querySelector('.a-color-picker-rgb').remove();
-            }
-            if (this.options.showHEX) {
-                this.setupInput(this.inputRGBHEX = this.element.querySelector('input[nameref=RGBHEX]'));
-            } else {
-                this.element.querySelector('.a-color-picker-rgbhex').remove();
-            }
-            if (this.options.paletteEditable || (this.options.palette && this.options.palette.length > 0)) {
-                this.setPalette(this.paletteRow = this.element.querySelector('.a-color-picker-palette'));
-            } else {
-                this.paletteRow = this.element.querySelector('.a-color-picker-palette');
-                this.paletteRow.remove();
-            }
-            // preparo in canvas per l'opacità
-            if (this.options.showAlpha) {
-                this.setupAlphaCanvas(this.element.querySelector('.a-color-picker-a'));
-                this.alphaPointer = this.element.querySelector('.a-color-picker-a+.a-color-picker-dot');
-            } else {
-                this.element.querySelector('.a-color-picker-alpha').remove();
-            }
-            this.element.style.width = `${this.options.slBarSize[0]}px`;
-            this.onValueChanged(COLOR, this.options.color);
-            if(this.options.afterTemplateConfiguration && typeof this.options.afterTemplateConfiguration === 'function'){
-                this.options.afterTemplateConfiguration.call(this)
-            }
+        if (this.container) {
+            copyOptionsFromElement(this.options, this.container);
+            this.#buildTemplate();
         } else {
             throw new Error(`Container not found: ${this.options.attachTo}`);
         }
+    }
+
+    #buildTemplate(){
+        this.H = 0;
+        this.S = 0;
+        this.L = 0;
+        this.R = 0;
+        this.G = 0;
+        this.B = 0;
+        this.A = 1;
+        // andrà a contenere la palette di colori effettivamente usata
+        // compresi i colori aggiunti o rimossi dall'utente, non sarà modificabile dirretamente dall'utente
+        this.palette = { /*<color>: boolean*/ };
+
+        // creo gli elementi HTML e li aggiungo al container
+        this.element = document.createElement('div');
+        if (this.options.id) {
+            this.element.id = this.options.id;
+        }
+        this.element.className = 'gs-colorpicker';
+        if (!this.options.show) this.element.classList.add('hidden');
+        // // se falsy viene nascosto .gs-colorpicker-rgb
+        // if (!this.options.showRGB) this.element.className += ' hide-rgb';
+        // // se falsy viene nascosto .gs-colorpicker-hsl
+        // if (!this.options.showHSL) this.element.className += ' hide-hsl';
+        // // se falsy viene nascosto .gs-colorpicker-single-input (css hex)
+        // if (!this.options.showHEX) this.element.className += ' hide-single-input';
+        // // se falsy viene nascosto .gs-colorpicker-a
+        // if (!this.options.showAlpha) this.element.className += ' hide-alpha';
+        this.element.innerHTML = HTML_BOX;
+        this.container.appendChild(this.element);
+
+        // ADD EYEDROP TOOL
+        if ('EyeDropper' in window) {
+            // The API is available!
+            let ed = this.element.querySelector('.gs-colorpicker-eyedropper');
+            const eyeDropper = new EyeDropper();
+            ed.addEventListener('click', (e) => {
+                eyeDropper.open()
+                    .then((result) => {
+                        this.onValueChanged(RGBHEX, result.sRGBHex);
+                    })
+                    .catch(() => {})
+            })
+        }else{
+            this.element.dataset.noEyeDropper;
+        }
+        // ADD HUE BAR
+        const hueBar = this.element.querySelector('.gs-colorpicker-h');
+        this.setupHueCanvas(hueBar);
+        this.hueBarHelper = canvasHelper(hueBar);
+        this.huePointer = this.element.querySelector('.gs-colorpicker-h+.gs-colorpicker-dot');
+
+        // SETUP CANVAS SATURATION & LUMINANCE
+        const slBar = this.element.querySelector('.gs-colorpicker-sl');
+        this.setupSlCanvas(slBar);
+        this.slBarHelper = canvasHelper(slBar);
+        this.slPointer = this.element.querySelector('.gs-colorpicker-sl+.gs-colorpicker-dot');
+
+        // SETUP COLOR  PREVIEW
+        this.preview = this.element.querySelector('.gs-colorpicker-preview');
+        this.setupClipboard(this.preview.querySelector('.gs-colorpicker-clipbaord'));
+
+        // CONFIGURE HSL INPUTS
+        this.setupInput(this.inputH = this.element.querySelector('.gs-colorpicker-hsl>input[nameref=H]'));
+        this.setupInput(this.inputS = this.element.querySelector('.gs-colorpicker-hsl>input[nameref=S]'));
+        this.setupInput(this.inputL = this.element.querySelector('.gs-colorpicker-hsl>input[nameref=L]'));
+
+
+        // CONFIGURE RGB INPUTS
+        this.setupInput(this.inputR = this.element.querySelector('.gs-colorpicker-rgb>input[nameref=R]'));
+        this.setupInput(this.inputG = this.element.querySelector('.gs-colorpicker-rgb>input[nameref=G]'));
+        this.setupInput(this.inputB = this.element.querySelector('.gs-colorpicker-rgb>input[nameref=B]'));
+
+        // CONFIGURE RGB HEX
+        this.setupInput(this.inputRGBHEX = this.element.querySelector('input[nameref=RGBHEX]'));
+        this.element.querySelector('.gs-colorpicker-rgbhex').hidden = !this.options.showHEX;
+
+        // CONFIGURE EDITABLE PALETTE
+        this.setPalette(this.paletteRow = this.element.querySelector('.gs-colorpicker-palette'));
+        this.paletteRow = this.element.querySelector('.gs-colorpicker-palette');
+
+        // ADD OPACITY SLIDER
+        this.setupAlphaCanvas(this.element.querySelector('.gs-colorpicker-a'));
+        this.alphaPointer = this.element.querySelector('.gs-colorpicker-a+.gs-colorpicker-dot');
+
+
+        this.element.style.width = `${this.options.slBarSize[0]}px`;
+        this.onValueChanged(COLOR, this.options.color);
+        if(this.options.afterTemplateConfiguration && typeof this.options.afterTemplateConfiguration === 'function'){
+            this.options.afterTemplateConfiguration.call(this)
+        }
+
+        this.#updateUIVisibility();
+        // AUTO OPEN IF REQUIRED
+        if(this.options.open) this.element.setAttribute('open');
+    }
+
+    #updateUIVisibility(){
+        this.element.querySelector('.gs-colorpicker-hsl').hidden = !this.options.showHSL;
+        this.element.querySelector('.gs-colorpicker-rgb').hidden = !this.options.showRGB;
+        this.element.querySelector('.gs-colorpicker-alpha').hidden = !(this.options.showAlpha);
+        this.paletteRow.hidden = !(this.options.paletteEditable || (this.options.palette && this.options.palette.length > 0));
+    }
+
+    setOptions(options){
+        console.warn('SET PICKER OPTIONS', options);
+        this.options = Object.assign({}, this.options, options);
+        this.updatePalette();
+        this.#updateUIVisibility();
     }
 
     setupHueCanvas(canvas) {
@@ -565,9 +584,9 @@ class ColorPicker {
         if (this.options.paletteEditable || palette.length > 0) {
             const addColorToPalette = (color, refElement, fire) => {
                 // se il colore è già presente, non creo un nuovo <div> ma sposto quello esistente in coda
-                const el = row.querySelector('.a-color-picker-palette-color[data-color="' + color + '"]') ||
+                const el = row.querySelector('.gs-colorpicker-palette-color[data-color="' + color + '"]') ||
                     document.createElement('div');
-                el.className = 'a-color-picker-palette-color';
+                el.className = 'gs-colorpicker-palette-color';
                 el.style.backgroundColor = color;
                 el.setAttribute('data-color', color);
                 el.title = color;
@@ -586,7 +605,7 @@ class ColorPicker {
                         this.onPaletteColorRemove(element.getAttribute('data-color'));
                     }
                 } else {
-                    row.querySelectorAll('.a-color-picker-palette-color[data-color]').forEach(el => {
+                    row.querySelectorAll('.gs-colorpicker-palette-color[data-color]').forEach(el => {
                         row.removeChild(el);
                     });
                     Object.keys(this.palette).forEach(k => {
@@ -601,15 +620,23 @@ class ColorPicker {
             palette.map(c => parseColor(c, useAlphaInPalette ? 'rgbcss4' : 'hex'))
                 .filter(c => !!c)
                 .forEach(c => addColorToPalette(c));
+
+
+            if( this.paletteColors) {
+                this.paletteColors.map(c => parseColor(c, (this.options.showAlpha && useAlphaInPalette) ? 'rgbcss4' : 'hex'))
+                    .filter(c => !!c)
+                    .forEach(c => { console.info('COLOR', c); addColorToPalette(c, null, false)});
+            }
+
             // in caso di palette editabile viene aggiunto un pulsante + che serve ad aggiungere il colore corrente
             if (this.options.paletteEditable) {
                 const el = document.createElement('div');
-                el.className = 'a-color-picker-palette-color a-color-picker-palette-add';
+                el.className = 'gs-colorpicker-palette-color gs-colorpicker-palette-add';
                 el.innerHTML = '+';
                 row.appendChild(el);
                 // gestisco eventi di aggiunta/rimozione/selezione colori
                 row.addEventListener('click', (e) => {
-                    if (/a-color-picker-palette-add/.test(e.target.className)) {
+                    if (/gs-colorpicker-palette-add/.test(e.target.className)) {
                         if (e.shiftKey) {
                             // rimuove tutti i colori
                             removeColorToPalette(null, true);
@@ -620,7 +647,7 @@ class ColorPicker {
                             // aggiungo il colore e triggero l'evento 'oncoloradd'
                             addColorToPalette(rgbToHex(this.R, this.G, this.B), e.target, true);
                         }
-                    } else if (/a-color-picker-palette-color/.test(e.target.className)) {
+                    } else if (/gs-colorpicker-palette-color/.test(e.target.className)) {
                         if (e.shiftKey) {
                             // rimuovo il colore e triggero l'evento 'oncolorremove'
                             removeColorToPalette(e.target, true);
@@ -634,7 +661,7 @@ class ColorPicker {
             } else {
                 // gestisco il solo evento di selezione del colore
                 row.addEventListener('click', (e) => {
-                    if (/a-color-picker-palette-color/.test(e.target.className)) {
+                    if (/gs-colorpicker-palette-color/.test(e.target.className)) {
                         // visto che il colore letto da backgroundColor risulta nel formato rgb()
                         // devo usare il valore hex originale
                         this.onValueChanged(COLOR, e.target.getAttribute('data-color'));
@@ -806,6 +833,8 @@ class ColorPicker {
     // }
 
     onPaletteColorAdd(color) {
+        if(!this.paletteColors) this.paletteColors = [];
+        this.paletteColors.push(color);
         this.oncoloradd && this.oncoloradd(color);
     }
 
@@ -901,7 +930,6 @@ function keepInViewport (el, targetX, targetY) {
     const rect = el.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    console.info(rect);
 
     // Calculate maximum allowed coordinates
     const maxX = viewportWidth - rect.width;
@@ -1141,12 +1169,10 @@ function createPicker(element, options) {
         },
 
         openPicker({target, x,y, color}, cb){
-            console.warn(target);
-
             if(target && (!x || !y)){
                 let bbox = target.getBoundingClientRect();
                 x = bbox.x;
-                y = bbox.y+bbox.height;
+                y = bbox.y+bbox.height;;
             }
             if(isNaN(x)) x = window.innerWidth*.5;
             if(isNaN(y)) y = 0;
@@ -1155,12 +1181,15 @@ function createPicker(element, options) {
             picker.element.classList.remove('hidden');
             color = parseColor(color || '#000', 'rgba');
             picker.onValueChanged(COLOR, color, { silent: true });
-
             _addGloablListeners();
             if(cb) {
                 callback = cb;
                 this.on('change', callback);
             }
+        },
+
+        setOptions(options){
+            picker.setOptions(options);
         },
 
         /**
