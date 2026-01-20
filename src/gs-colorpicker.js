@@ -413,7 +413,6 @@ class ColorPicker {
     }
 
     setOptions(options){
-        console.warn('SET PICKER OPTIONS', options);
         this.options = Object.assign({}, this.options, options);
         this.updatePalette();
         this.#updateUIVisibility();
@@ -599,11 +598,13 @@ class ColorPicker {
             const removeColorToPalette = (element, fire) => {
                 // se element è nullo elimino tutti i colori
                 if (element) {
-                    row.removeChild(element);
-                    this.palette[element.getAttribute('data-color')] = false;
-                    if (fire) {
-                        this.onPaletteColorRemove(element.getAttribute('data-color'));
-                    }
+                    try {
+                        row.removeChild(element);
+                        this.palette[element.getAttribute('data-color')] = false;
+                        if (fire) {
+                            this.onPaletteColorRemove(element.getAttribute('data-color'));
+                        }
+                    }catch(err){}
                 } else {
                     row.querySelectorAll('.gs-colorpicker-palette-color[data-color]').forEach(el => {
                         row.removeChild(el);
@@ -839,6 +840,9 @@ class ColorPicker {
     }
 
     onPaletteColorRemove(color) {
+        if(this.paletteColors) {
+            this.paletteColors = this.paletteColors.filter((c) => c !== color);
+        }
         this.oncolorremove && this.oncolorremove(color);
     }
 
